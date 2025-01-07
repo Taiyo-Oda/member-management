@@ -1,0 +1,13 @@
+# ベースイメージを指定
+FROM eclipse-temurin:21-jdk
+# 後続のRUN, CMD, ENTRYPOINT, COPY, ADDなどの命令が実行されるディレクトリを指定
+WORKDIR /app
+# maven関連のディレクトリやファイルをイメージにコピー
+COPY .mvn/ ./.mvn
+COPY mvnw pom.xml ./
+# mavenで設定している依存関係をダウンロードし、ローカル環境でキャッシュする
+RUN ./mvnw dependency:go-offline
+# srcディレクトリをイメージに追加する
+COPY src ./src
+# spring bootをコンテナ内で起動する
+CMD ["./mvnw", "spring-boot:run"]
