@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres
+    networks:
+      - member-management-net
+    volumes:
+      - member-management-vol:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      TZ: Asia/Tokyo
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  member-management-backend:
+    depends_on:
+      - postgres
+    image: localhost:5001/member-management-backend:1.0.0
+    ports:
+      - "8080:8080"
+    networks:
+      - member-management-net
+    environment:
+      TZ: Asia/Tokyo
+networks:
+  member-management-net:
+    external: true
+volumes:
+  member-management-vol:
+    external: true
