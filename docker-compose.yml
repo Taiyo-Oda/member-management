@@ -21,7 +21,7 @@ services:
   member-management-backend:
     depends_on:
       - postgres
-    image: localhost:5001/member-management-backend:1.0.0
+    image: member-management-backend
     ports:
       - "8080:8080"
     networks:
