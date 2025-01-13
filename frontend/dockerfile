@@ -1,0 +1,17 @@
+# ビルド用のステージ
+# ビルド用と実行用を分けることで、buidした後の資材のみをコンテナに含めることができるようになるため、軽量化ができる
+FROM node:lts-alpine AS build
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+# ② 実行用のステージ（Nginxベースに変更）
+FROM nginx:alpine
+
+# Nginxのデフォルトの公開ディレクトリにビルド成果物をコピー
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# NginxイメージはデフォルトでNginxを起動する設定になっているのでCMDの指定は不要
