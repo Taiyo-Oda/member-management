@@ -28,6 +28,12 @@ services:
       - member-management-net
     environment:
       TZ: Asia/Tokyo
+  member-management-frontend:
+    image: member-management-frontend
+    ports:
+      - "3000:80"
+    networks:
+      - member-management-net
 networks:
   member-management-net:
     external: true
