@@ -28,15 +28,27 @@ services:
       - member-management-net
     environment:
       TZ: Asia/Tokyo
-  member-management-frontend:
-    image: member-management-frontend
+  member-management-frontend-prod:
+    image: member-management-frontend-prod
     ports:
       - "3000:80"
     networks:
       - member-management-net
+  member-management-frontend-dev:
+    build:
+      context: ./frontend
+      dockerfile: dockerfile.dev
+    networks:
+      - member-management-net
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    command: npm run dev
 networks:
   member-management-net:
     external: true
 volumes:
   member-management-vol:
-    external: true
+    external: true 
