@@ -1,0 +1,23 @@
+# dockerfile.dev
+
+# 1. ベースイメージとしてJava 21 (Eclipse Temurin) を利用
+FROM eclipse-temurin:21-jdk
+
+# 2. 作業ディレクトリを設定
+WORKDIR /app
+
+# 3. Maven Wrapper関連ファイルをコピーして依存関係をキャッシュ
+COPY .mvn/ .mvn
+COPY mvnw pom.xml ./
+RUN chmod +x mvnw
+RUN ./mvnw dependency:go-offline
+
+# 4. srcフォルダをコピー
+# （ホットリロードを使う場合、docker-compose.ymlでホストのsrcをマウントする運用が多い）
+COPY src ./src
+
+# 5. ポートを開けておく
+EXPOSE 8080
+
+# 6. Spring Bootを起動（ホットリロード用にfork=falseを付加）
+CMD ["./mvnw", "spring-boot:run", "-Dspring-boot.run.fork=false"]
