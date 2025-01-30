@@ -1,0 +1,8 @@
+FROM node:lts-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+
+# ホットリロードを行うための設定
+# docker-compose.ymlでも指定しているが、こちらでも設定しておけば、このイメージ単体runしたときもホットリロードが有効になる
+CMD ["npm", "run", "dev"]

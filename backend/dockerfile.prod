@@ -1,0 +1,33 @@
+# dockerfile.prod
+
+#
+# ===== Stage 1: ビルド用ステージ =====
+#
+FROM eclipse-temurin:21-jdk AS builder
+
+WORKDIR /app
+
+# 1. Maven WrapperとPOMをコピーして依存をダウンロード
+COPY .mvn/ .mvn
+COPY mvnw pom.xml ./
+RUN chmod +x mvnw
+RUN ./mvnw dependency:go-offline
+
+# 2. ソースコードをコピーしてビルド
+COPY src ./src
+RUN ./mvnw package -DskipTests
+
+#
+# ===== Stage 2: 実行用ステージ =====
+#
+FROM eclipse-temurin:21-jdk
+WORKDIR /app
+
+# 3. ビルド済みのjarファイルだけをコピー
+COPY --from=builder /app/target/*.jar /app/app.jar
+
+# 4. ポートを開放（Spring Boot標準は8080）
+EXPOSE 8080
+
+# 5. 実行コマンドを指定
+CMD ["java", "-jar", "/app/app.jar"]

@@ -18,25 +18,54 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-  member-management-backend:
+  member-management-backend-prod:
     depends_on:
       - postgres
-    image: member-management-backend
+    image: member-management-backend-prod
     ports:
       - "8080:8080"
     networks:
       - member-management-net
     environment:
       TZ: Asia/Tokyo
-  member-management-frontend:
-    image: member-management-frontend
+  member-management-backend-dev:
+    depends_on:
+      - postgres
+    build:
+      context: ./backend
+      dockerfile: dockerfile.dev
+    image: member-management-backend-dev
+    ports:
+      - "8080:8080"
+    networks:
+      - member-management-net
+    volumes:
+      - ./backend:/app
+    environment:
+      TZ: Asia/Tokyo
+    command: ["./mvnw", "spring-boot:run", "-Dspring-boot.run.fork=false"]
+  member-management-frontend-prod:
+    image: member-management-frontend-prod
     ports:
       - "3000:80"
     networks:
       - member-management-net
+  member-management-frontend-dev:
+    build:
+      context: ./frontend
+      dockerfile: dockerfile.dev
+    image: member-management-frontend-dev
+    networks:
+      - member-management-net
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    command: npm run dev
 networks:
   member-management-net:
     external: true
 volumes:
   member-management-vol:
-    external: true
+    external: true 
