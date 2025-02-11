@@ -7,5 +7,10 @@
     {
       "path": "./tsconfig.app.json"
     }
-  ]
+  ],
+  "compilerOptions": {
+    "target": "es2015",        // ES2015以上に変更
+    "module": "es2020",        // import.meta を許容する設定
+    "lib": ["es2015", "dom"],  // 必要なライブラリの指定
+  }
 }
