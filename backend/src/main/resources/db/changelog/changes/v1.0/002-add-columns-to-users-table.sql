@@ -1,0 +1,8 @@
+--liquibase formatted sql
+--changeset author:2
+ALTER TABLE users
+ADD COLUMN salt VARCHAR(255) NOT NULL,
+ADD COLUMN login_attempts INT NOT NULL DEFAULT 0,
+ADD COLUMN created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
+--rollback ALTER TABLE users DROP COLUMN salt, DROP COLUMN login_attempts, DROP COLUMN created_at, DROP COLUMN updated_at;
