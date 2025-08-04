@@ -1,15 +1,15 @@
 package com.example.membermanagement.controller;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.example.membermanagement.config.SecurityConfig;
 import com.example.membermanagement.dto.request.UserRequestDto;
 import com.example.membermanagement.dto.service.UserDto;
-import com.example.membermanagement.service.UserServiceImpl;
+import com.example.membermanagement.service.impl.UserServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -46,7 +46,6 @@ class UserControllerTest {
   void testCreateUser() throws Exception {
     // リクエストDTOの準備
     UserRequestDto requestDto = new UserRequestDto();
-    requestDto.setUserName("testUser");
     requestDto.setMailAddress("test@mail.com");
     requestDto.setPassword("testPassword");
 
@@ -57,7 +56,7 @@ class UserControllerTest {
     responseDto.setMailAddress("test@mail.com");
     responseDto.setCreatedAt(LocalDateTime.of(2025, 5, 1, 0, 0));
 
-    doReturn(responseDto).when(userServiceImpl).createUser(requestDto);
+    doReturn(responseDto).when(userServiceImpl).createUser(any(UserRequestDto.class));
 
     // 期待値JSONファイルの読み込み
     String expectedJson =
@@ -72,5 +71,41 @@ class UserControllerTest {
                 .content(objectMapper.writeValueAsString(requestDto)))
         .andExpect(status().isCreated())
         .andExpect(content().json(expectedJson));
+  }
+
+  @Test
+  @DisplayName("メールアドレスが空の場合のバリデーションエラーテスト")
+  void testCreateUser_EmptyEmail() throws Exception {
+    // 不正なリクエストDTOの準備
+    UserRequestDto requestDto = new UserRequestDto();
+    requestDto.setMailAddress(""); // 空のメールアドレス
+    requestDto.setPassword("testPassword01");
+
+    // リクエスト実行と検証
+    mockMvc
+        .perform(
+            post("/api/v1/users")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.mailAddress").exists()); // エラーメッセージの存在確認
+  }
+
+  @Test
+  @DisplayName("パスワードが短い場合のバリデーションエラーテスト")
+  void testCreateUser_ShortPassword() throws Exception {
+    UserRequestDto requestDto = new UserRequestDto();
+    requestDto.setMailAddress("test@mail.com");
+    requestDto.setPassword("short"); // 8文字未満のパスワード
+
+    mockMvc
+        .perform(
+            post("/api/v1/users")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.password").exists());
   }
 }
